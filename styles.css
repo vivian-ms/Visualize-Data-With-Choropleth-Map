@@ -1,0 +1,7 @@
+#svg_container {
+  position: relative;
+}
+
+#tooltip {
+  position: absolute;
+}
