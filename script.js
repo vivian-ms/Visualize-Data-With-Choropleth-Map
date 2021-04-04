@@ -5,6 +5,16 @@ const urls = {
 const w = 900;
 const h = 500;
 const padding = 100;
+const colors = [
+// '#f7fbff',  (Too light, don't use)
+  '#deebf7',
+  '#c6dbef',
+  '#9ecae1',
+  '#6baed6',
+  '#4292c6',
+  '#2171b5',
+  '#084594'
+];  // Source: https://colorbrewer2.org/?type=sequential&scheme=Blues&n=8
 
 
 window.onload = () => {
@@ -37,11 +47,21 @@ function createCanvas(data) {
 function createMap(svg, data) {
   let path = d3.geoPath();
 
+  let colorScale = d3.scaleQuantize()
+                     .domain([
+                       d3.min(data[0], d => d.bachelorsOrHigher),
+                       d3.max(data[0], d => d.bachelorsOrHigher)
+                     ])
+                     .range(colors);
+
   svg.selectAll('path')
      .data(topojson.feature(data[1], data[1].objects.counties).features)
      .enter()
      .append('path')
      .attr('d', path)
+     .attr('stroke', 'grey')
+     .attr('stroke-width', '0.01rem')
+     .attr('fill', d => colorScale(data[0].find(obj => obj.fips === d.id).bachelorsOrHigher))
      .attr('data-fips', d => d.id)
      .attr('data-education', d => data[0].find(obj => obj.fips === d.id).bachelorsOrHigher)
      .classed('county', true);
@@ -49,5 +69,8 @@ function createMap(svg, data) {
   svg.append('path')
      .datum(topojson.mesh(data[1], data[1].objects.states, (a, b) => a !== b))
      .attr('d', path)
+     .attr('stroke', 'white')
+     .attr('stroke-linejoin', 'round')
+     .attr('fill', 'none')
      .classed('state', true);
 }  // End createMap()
