@@ -54,6 +54,11 @@ function createMap(svg, data) {
                      ])
                      .range(colors);
 
+  let tooltip = d3.select('#svg_container')
+                 .append('div')
+                 .attr('id', 'tooltip')
+                 .style('opacity', 0);
+
   svg.selectAll('path')
      .data(topojson.feature(data[1], data[1].objects.counties).features)
      .enter()
@@ -64,7 +69,34 @@ function createMap(svg, data) {
      .attr('fill', d => colorScale(data[0].find(obj => obj.fips === d.id).bachelorsOrHigher))
      .attr('data-fips', d => d.id)
      .attr('data-education', d => data[0].find(obj => obj.fips === d.id).bachelorsOrHigher)
-     .classed('county', true);
+     .classed('county', true)
+     .on('mouseover', (evt, d) => {
+       d3.select(evt.currentTarget).transition()
+         .duration(50)
+         .attr('stroke', 'black')
+         .attr('stroke-width', '0.05rem');
+
+       tooltip.transition()
+              .duration(50)
+              .style('opacity', 1)
+              .style('left', `${evt.x + 20}px`)
+              .style('top', `${evt.y - 130}px`);
+        tooltip.attr('data-education', d3.select(evt.currentTarget).attr('data-education'))
+               .html(() => {
+                 let selection = data[0].find(obj => obj.fips === d.id);
+                 return `${selection.area_name}, ${selection.state} <br /> ${selection.bachelorsOrHigher}%`;
+               });
+     })
+     .on('mouseleave', (evt, d) => {
+       d3.select(evt.currentTarget).transition()
+         .duration(50)
+         .attr('stroke', 'grey')
+         .attr('stroke-width', '0.01rem');
+
+       tooltip.transition()
+              .duration(50)
+              .style('opacity', 0);
+     });
 
   svg.append('path')
      .datum(topojson.mesh(data[1], data[1].objects.states, (a, b) => a !== b))
