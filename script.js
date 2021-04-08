@@ -38,7 +38,7 @@ function createCanvas(data) {
               .attr('width', w + 2 * padding)
               .attr('height', h + 2 * padding)
               .append('g')
-              .attr('transform', `translate(${padding}, ${padding / 10})`);
+              .attr('transform', `translate(${padding}, ${padding / 2})`);
 
   createMap(svg, data);
 }  // End createCanvas()
@@ -105,4 +105,38 @@ function createMap(svg, data) {
      .attr('stroke-linejoin', 'round')
      .attr('fill', 'none')
      .classed('state', true);
+
+  createLegend(svg, colorScale);
 }  // End createMap()
+
+
+function createLegend(svg, scale) {
+  let legend = svg.append('g')
+                  .attr('id', 'legend')
+                  .attr('transform', `translate(${w / 2}, 0)`);
+  legend.append('text')
+        .attr('id', 'description')
+        .attr('x', -15)
+        .attr('y', 0)
+        .text('Percentage of adults 25 years and older with a bachelor\'s degree or higher');
+  legend.selectAll('rect')
+        .data(colors)
+        .enter()
+        .append('rect')
+        .attr('x', (d, i) => i * 50)
+        .attr('y', 10)
+        .attr('width', 50)
+        .attr('height', 10)
+        .attr('fill', d => d);
+  for (let i = 0; i <= colors.length; i++) {
+    legend.append('text')
+          .attr('text-anchor', 'middle')
+          .attr('x', i * 50)
+          .attr('y', 35)
+          .classed('value', true)
+          .text(d => {
+            return i === colors.length ?
+            `${(scale.invertExtent(colors[i - 1])[1]).toFixed(2)}%` : `${(scale.invertExtent(colors[i])[0]).toFixed(2)}%`;
+          });
+  }
+}  // End createLegend()
