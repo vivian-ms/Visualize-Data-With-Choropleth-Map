@@ -37,11 +37,14 @@ function createCanvas(data) {
               .attr('viewBox', `-70 0 ${w} ${h}`)
               .attr('preserveAspectRatio', 'xMidYMid meet');
 
-  createMap(svg, data);
+  createMap(data);
 }  // End createCanvas()
 
 
-function createMap(svg, data) {
+function createMap(data) {
+  let g = d3.select('svg').append('g')
+            .attr('id', 'map');
+
   let path = d3.geoPath();
 
   let colorScale = d3.scaleQuantize()
@@ -56,61 +59,59 @@ function createMap(svg, data) {
                  .attr('id', 'tooltip')
                  .style('opacity', 0);
 
-  svg.selectAll('path')
-     .data(topojson.feature(data[1], data[1].objects.counties).features)
-     .enter()
-     .append('path')
-     .attr('d', path)
-     .attr('stroke', 'grey')
-     .attr('stroke-width', '0.01rem')
-     .attr('fill', d => colorScale(data[0].find(obj => obj.fips === d.id).bachelorsOrHigher))
-     .attr('data-fips', d => d.id)
-     .attr('data-education', d => data[0].find(obj => obj.fips === d.id).bachelorsOrHigher)
-     .classed('county', true)
-     .on('mouseover', (evt, d) => {
-       d3.select(evt.currentTarget).transition()
-         .duration(50)
-         .attr('stroke', 'black')
-         .attr('stroke-width', '0.05rem');
+  g.selectAll('path')
+   .data(topojson.feature(data[1], data[1].objects.counties).features)
+   .enter()
+   .append('path')
+   .attr('d', path)
+   .attr('stroke', 'grey')
+   .attr('stroke-width', '0.01rem')
+   .attr('fill', d => colorScale(data[0].find(obj => obj.fips === d.id).bachelorsOrHigher))
+   .attr('data-fips', d => d.id)
+   .attr('data-education', d => data[0].find(obj => obj.fips === d.id).bachelorsOrHigher)
+   .classed('county', true)
+   .on('mouseover', (evt, d) => {
+     d3.select(evt.currentTarget).transition()
+       .duration(50)
+       .attr('stroke', 'black')
+       .attr('stroke-width', '0.05rem');
 
-       tooltip.transition()
-              .duration(50)
-              .style('opacity', 1)
-              .style('left', `${evt.pageX - 80}px`)
-              .style('top', `${evt.pageY - 150}px`);
-        tooltip.attr('data-education', d3.select(evt.currentTarget).attr('data-education'))
-               .html(() => {
-                 let selection = data[0].find(obj => obj.fips === d.id);
-                 return `${selection.area_name}, ${selection.state} <br /> ${selection.bachelorsOrHigher}%`;
-               });
-     })
-     .on('mouseleave', (evt, d) => {
-       d3.select(evt.currentTarget).transition()
-         .duration(50)
-         .attr('stroke', 'grey')
-         .attr('stroke-width', '0.01rem');
+     tooltip.transition()
+            .duration(50)
+            .style('opacity', 1)
+            .style('left', `${evt.pageX - 80}px`)
+            .style('top', `${evt.pageY - 150}px`);
+     tooltip.attr('data-education', d3.select(evt.currentTarget).attr('data-education'))
+            .html(() => {
+              let selection = data[0].find(obj => obj.fips === d.id);
+              return `${selection.area_name}, ${selection.state} <br /> ${selection.bachelorsOrHigher}%`;
+            });
+   })
+   .on('mouseleave', (evt, d) => {
+     d3.select(evt.currentTarget).transition()
+       .duration(50)
+       .attr('stroke', 'grey')
+       .attr('stroke-width', '0.01rem');
 
-       tooltip.transition()
-              .duration(50)
-              .style('opacity', 0);
-     });
+     tooltip.transition()
+            .duration(50)
+            .style('opacity', 0);
+   });
 
-  svg.append('path')
-     .datum(topojson.mesh(data[1], data[1].objects.states, (a, b) => a !== b))
-     .attr('d', path)
-     .attr('stroke', 'white')
-     .attr('stroke-linejoin', 'round')
-     .attr('fill', 'none')
-     .classed('state', true);
+  g.append('path')
+   .datum(topojson.mesh(data[1], data[1].objects.states, (a, b) => a !== b))
+   .attr('d', path)
+   .classed('state', true);
 
-  createLegend(svg, colorScale);
+  createLegend(colorScale);
+  addZoom();
 }  // End createMap()
 
 
-function createLegend(svg, scale) {
-  let legend = svg.append('g')
-                  .attr('id', 'legend')
-                  .attr('transform', `translate(${w / 2}, 10)`);
+function createLegend(scale) {
+  let legend = d3.select('svg').append('g')
+                 .attr('id', 'legend')
+                 .attr('transform', `translate(${w / 2}, 10)`);
   legend.append('text')
         .attr('id', 'description')
         .attr('x', -15)
@@ -137,3 +138,15 @@ function createLegend(svg, scale) {
           });
   }
 }  // End createLegend()
+
+
+function addZoom() {
+  let zoom = d3.zoom()
+               .scaleExtent([1, 5])
+               .translateExtent([[-70, 0], [w - 70, h]])
+               .on('zoom', evt => {
+                 d3.select('#map').attr('transform', evt.transform);
+               });
+
+  d3.select('svg').call(zoom);
+}  // End addZoom()
