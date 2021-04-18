@@ -2,9 +2,8 @@ const urls = {
   education: 'https://cdn.freecodecamp.org/testable-projects-fcc/data/choropleth_map/for_user_education.json',
   county: 'https://cdn.freecodecamp.org/testable-projects-fcc/data/choropleth_map/counties.json'
 };
-const w = 900;
-const h = 500;
-const padding = 100;
+const w = 1050;
+const h = 600;
 const colors = [
 // '#f7fbff',  (Too light, don't use)
   '#deebf7',
@@ -35,10 +34,8 @@ window.onload = () => {
 function createCanvas(data) {
   let svg = d3.select('#svg_container')
               .append('svg')
-              .attr('width', w + 2 * padding)
-              .attr('height', h + 2 * padding)
-              .append('g')
-              .attr('transform', `translate(${padding}, ${padding / 2})`);
+              .attr('viewBox', `-70 0 ${w} ${h}`)
+              .attr('preserveAspectRatio', 'xMidYMid meet');
 
   createMap(svg, data);
 }  // End createCanvas()
@@ -79,8 +76,8 @@ function createMap(svg, data) {
        tooltip.transition()
               .duration(50)
               .style('opacity', 1)
-              .style('left', `${evt.x + 20}px`)
-              .style('top', `${evt.y - 130}px`);
+              .style('left', `${evt.pageX - 80}px`)
+              .style('top', `${evt.pageY - 150}px`);
         tooltip.attr('data-education', d3.select(evt.currentTarget).attr('data-education'))
                .html(() => {
                  let selection = data[0].find(obj => obj.fips === d.id);
@@ -113,7 +110,7 @@ function createMap(svg, data) {
 function createLegend(svg, scale) {
   let legend = svg.append('g')
                   .attr('id', 'legend')
-                  .attr('transform', `translate(${w / 2}, 0)`);
+                  .attr('transform', `translate(${w / 2}, 10)`);
   legend.append('text')
         .attr('id', 'description')
         .attr('x', -15)
