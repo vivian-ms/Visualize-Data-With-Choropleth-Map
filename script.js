@@ -148,5 +148,36 @@ function addZoom() {
                  d3.select('#map').attr('transform', evt.transform);
                });
 
-  d3.select('svg').call(zoom);
+  const zoomTo = level => {
+    d3.select('svg').transition()
+      .duration(100)
+      .call(zoom.scaleTo, level);
+  }
+
+  d3.select('svg').call(zoom)
+                  .on('wheel.zoom', null);
+
+  d3.selectAll('button').on('click', evt => {
+    let slider = document.querySelector('input[type=range]');
+
+    if (evt.currentTarget.id === 'zoom-in') {
+      zoomTo(Number(slider.value) + 0.5);
+
+      setTimeout(() => {
+        slider.value = Number(slider.value) + 0.5;
+      }, 50);
+    }  // End 'zoom-in'
+
+    if(evt.currentTarget.id === 'zoom-out') {
+      zoomTo(Number(slider.value) - 0.5);
+
+      setTimeout(() => {
+        slider.value = Number(slider.value) - 0.5;
+      }, 50);
+    }  // End 'zoom-out'
+  });  // End buttons event
+
+  d3.select('input[type=range]').on('input', evt => {
+    zoomTo(evt.currentTarget.value);
+  });
 }  // End addZoom()
