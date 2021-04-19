@@ -4,7 +4,6 @@ h1 {
 
 #svg_container {
   position: relative;
-  text-align: center;
 }
 
 .state {
@@ -27,5 +26,9 @@ h1 {
 }
 
 .value {
-  font-size: 0.75rem;
+  font-size: 0.6rem;
+}
+
+input[type=range] {
+  width: 30%;
 }
